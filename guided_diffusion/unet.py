@@ -14,6 +14,7 @@ from .nn import (
     normalization,
     timestep_embedding,
 )
+from . import logger
 
 
 class AttentionPool2d(nn.Module):
@@ -30,7 +31,7 @@ class AttentionPool2d(nn.Module):
     ):
         super().__init__()
         self.positional_embedding = nn.Parameter(
-            th.randn(embed_dim, spacial_dim ** 2 + 1) / embed_dim ** 0.5
+            th.randn(embed_dim, spacial_dim**2 + 1) / embed_dim**0.5
         )
         self.qkv_proj = conv_nd(1, embed_dim, 3 * embed_dim, 1)
         self.c_proj = conv_nd(1, embed_dim, output_dim or embed_dim, 1)
@@ -318,7 +319,7 @@ def count_flops_attn(model, _x, y):
     # We perform two matmuls with the same number of ops.
     # The first computes the weight matrix, the second computes
     # the combination of the value vectors.
-    matmul_ops = 2 * b * (num_spatial ** 2) * c
+    matmul_ops = 2 * b * (num_spatial**2) * c
     model.total_ops += th.DoubleTensor([matmul_ops])
 
 
@@ -826,9 +827,9 @@ class EncoderUNetModel(nn.Module):
         )
         self._feature_size += ch
         self.pool = pool
-        self.gap = nn.AvgPool2d((8, 8))  #global average pooling
+        self.gap = nn.AvgPool2d((8, 8))  # global average pooling
         self.cam_feature_maps = None
-        print('pool', pool)
+        print("pool", pool)
         if pool == "adaptive":
             self.out = nn.Sequential(
                 normalization(ch),
@@ -873,8 +874,6 @@ class EncoderUNetModel(nn.Module):
         self.input_blocks.apply(convert_module_to_f32)
         self.middle_block.apply(convert_module_to_f32)
 
-
-
     def forward(self, x, timesteps):
         """
         Apply the model to an input batch.
@@ -893,15 +892,49 @@ class EncoderUNetModel(nn.Module):
                 results.append(h.type(x.dtype).mean(dim=(2, 3)))
         h = self.middle_block(h, emb)
 
-
         if self.pool.startswith("spatial"):
             self.cam_feature_maps = h
             h = self.gap(h)
             N = h.shape[0]
             h = h.reshape(N, -1)
-            print('h1', h.shape)
+            print("h1", h.shape)
             return self.out(h)
         else:
             h = h.type(x.dtype)
             self.cam_feature_maps = h
             return self.out(h)
+
+
+if __name__ == "__main__":
+
+    # Verify the model arthitecture here
+    # bash> python -m improved_diffusion.unet
+    image_size = 64
+    NUM_CLASSES, class_cond = 1000, None
+    model = UNetModel(
+        image_size=image_size,
+        in_channels=4,  # 3 channels color image + 1 color gray scale heatmap
+        model_channels=128,
+        out_channels=2,  # (3 if not learn_sigma else 6),
+        num_res_blocks=2,
+        attention_resolutions=tuple("16,8"),
+        dropout=0.0,
+        channel_mult="",
+        num_classes=(NUM_CLASSES if class_cond else None),
+        use_checkpoint=False,
+        use_fp16=False,
+        num_heads=4,
+        num_head_channels=-1,
+        num_heads_upsample=-1,
+        use_scale_shift_norm=True,
+        resblock_updown=False,
+        use_new_attention_order=False,
+    )
+    logger.log(f"Model : {model}")
+
+    # 
+    batch_size = 1
+    x = th.randn((batch_size, 3 + 1, image_size, image_size))   # the original image is added into tensor at the start of unet training
+    timesteps = th.randn((batch_size))
+    logits = model(x, timesteps)
+    logger.log(f"logit shape: {logits.shape}")

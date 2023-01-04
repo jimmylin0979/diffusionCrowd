@@ -165,9 +165,10 @@ def create_model(
 
     return UNetModel(
         image_size=image_size,
-        in_channels=5,
+        in_channels=4,  # 3 channels color image + 1 color gray scale heatmap 
         model_channels=num_channels,
-        out_channels=2,#(3 if not learn_sigma else 6),
+        # TODO: Why $out_channels have to be 6 if learn_sigma is set
+        out_channels=2, #(3 if not learn_sigma else 6),
         num_res_blocks=num_res_blocks,
         attention_resolutions=tuple(attention_ds),
         dropout=dropout,

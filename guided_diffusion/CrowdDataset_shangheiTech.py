@@ -58,7 +58,7 @@ class CrowdDataset_shangheiTech(data.Dataset):
             image = image.repeat(3, 1, 1)
         densityMap = self.transforms(densityMap)
 
-        print(image.shape, densityMap.shape)
+        # print(image.shape, densityMap.shape)
 
         #
         return (image, densityMap)
