@@ -49,14 +49,14 @@ TRAIN_FLAGS="--lr 1e-4 --batch_size 10"
 To train the segmentation model, run
 
 ```
-python3 scripts/segmentation_train.py --data_dir ./data/training $TRAIN_FLAGS $MODEL_FLAGS $DIFFUSION_FLAGS
+python3 scripts/segmentation_train.py --data_dir ./data/ShanghaiTech/part_A/train_data $TRAIN_FLAGS $MODEL_FLAGS $DIFFUSION_FLAGS
 ```
 The model will be saved in the *results* folder.
 For sampling an ensemble of 5 segmentation masks with the DDPM approach, run:
 
 **Evaluation part is still working !**
 ```
-python scripts/segmentation_sample.py  --data_dir ./data/testing  --model_path ./results/savedmodel.pt --num_ensemble=5 $MODEL_FLAGS $DIFFUSION_FLAGS
+python scripts/segmentation_sample.py  --data_dir ./data/ShanghaiTech/part_A/test_data  --model_path ./results/savedmodel.pt --num_ensemble=5 $MODEL_FLAGS $DIFFUSION_FLAGS
 ```
 The generated segmentation masks will be stored in the *results* folder. A visualization of the sampling process is done using [Visdom](https://github.com/fossasia/visdom).
 
