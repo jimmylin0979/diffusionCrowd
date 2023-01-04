@@ -11,12 +11,13 @@ from PIL import Image
 
 
 class CrowdDataset_shangheiTech(data.Dataset):
-    def __init__(self, root: str, image_size: int) -> None:
+    def __init__(self, root: str, image_size: int, test_flag=False) -> None:
         super(CrowdDataset_shangheiTech, self).__init__()
 
         # Attributes
         self.root = root
         self.image_size = image_size
+        self.test_flag = test_flag
         self.transforms = None
 
         # If not transforms is inputed, then suggest the most basic transforms in default
@@ -59,6 +60,10 @@ class CrowdDataset_shangheiTech(data.Dataset):
         densityMap = self.transforms(densityMap)
 
         # print(image.shape, densityMap.shape)
+
+        # 
+        if self.test_flag:
+            return (image, path_image) 
 
         #
         return (image, densityMap)

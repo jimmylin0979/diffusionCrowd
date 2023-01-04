@@ -259,11 +259,15 @@ class GaussianDiffusion:
         B, C = x.shape[:2]
         C = 1
         assert t.shape == (B,)
+        
+        #
+        # print("evaluate x.shape", x.shape)
         model_output = model(x, self._scale_timesteps(t), **model_kwargs)
         x = x[
             :, -1:, ...
         ]  # loss is only calculated on the last channel, not on the input brain MR image
         if self.model_var_type in [ModelVarType.LEARNED, ModelVarType.LEARNED_RANGE]:
+            # TODO: Why the model output a 2-channel logits ?
             assert model_output.shape == (B, C * 2, *x.shape[2:])
             model_output, model_var_values = th.split(model_output, C, dim=1)
             if self.model_var_type == ModelVarType.LEARNED:
@@ -576,7 +580,8 @@ class GaussianDiffusion:
                     )
 
                 with th.no_grad():
-                    if img.shape != (1, 5, 224, 224):
+                    # TODO: Modify with input image size
+                    if img.shape != (1, 4, shape[2], shape[3]):
                         img = torch.cat(
                             (org_MRI, img), dim=1
                         )  # in every step, make sure to concatenate the original image to the sampled segmentation mask
