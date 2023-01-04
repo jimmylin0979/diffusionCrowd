@@ -3,11 +3,12 @@ Train a diffusion model on images.
 """
 import sys
 import argparse
+
 sys.path.append("..")
 sys.path.append(".")
 from guided_diffusion import dist_util, logger
 from guided_diffusion.resample import create_named_schedule_sampler
-from guided_diffusion.bratsloader import BRATSDataset
+from guided_diffusion.CrowdDataset_shangheiTech import CrowdDataset_shangheiTech
 from guided_diffusion.script_util import (
     model_and_diffusion_defaults,
     create_model_and_diffusion,
@@ -17,7 +18,9 @@ from guided_diffusion.script_util import (
 import torch as th
 from guided_diffusion.train_util import TrainLoop
 from visdom import Visdom
+
 viz = Visdom(port=8850)
+
 
 def main():
     args = create_argparser().parse_args()
@@ -30,16 +33,16 @@ def main():
         **args_to_dict(args, model_and_diffusion_defaults().keys())
     )
     model.to(dist_util.dev())
-    schedule_sampler = create_named_schedule_sampler(args.schedule_sampler, diffusion,  maxt=1000)
+    schedule_sampler = create_named_schedule_sampler(
+        args.schedule_sampler, diffusion, maxt=1000
+    )
 
     logger.log("creating data loader...")
-    ds = BRATSDataset(args.data_dir, test_flag=False)
-    datal= th.utils.data.DataLoader(
-        ds,
-        batch_size=args.batch_size,
-        shuffle=True)
-    data = iter(datal)
-
+    dataset = CrowdDataset_shangheiTech(args.data_dir, image_size=args.image_size)
+    dataloader = th.utils.data.DataLoader(
+        dataset, batch_size=args.batch_size, shuffle=True
+    )
+    data = iter(dataloader)
 
     logger.log("training...")
     TrainLoop(
@@ -47,7 +50,7 @@ def main():
         diffusion=diffusion,
         classifier=None,
         data=data,
-        dataloader=datal,
+        dataloader=dataloader,
         batch_size=args.batch_size,
         microbatch=args.microbatch,
         lr=args.lr,
@@ -65,7 +68,7 @@ def main():
 
 def create_argparser():
     defaults = dict(
-        data_dir="./data/training",
+        data_dir="./data/ShanghaiTech/part_A/train_data",
         schedule_sampler="uniform",
         lr=1e-4,
         weight_decay=0.0,
@@ -75,7 +78,7 @@ def create_argparser():
         ema_rate="0.9999",  # comma-separated list of EMA values
         log_interval=100,
         save_interval=5000,
-        resume_checkpoint='',#'"./results/pretrainedmodel.pt",
+        resume_checkpoint="",  #'"./results/pretrainedmodel.pt",
         use_fp16=False,
         fp16_scale_growth=1e-3,
     )
