@@ -7,6 +7,8 @@ import argparse
 import os
 import nibabel as nib
 from visdom import Visdom
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 viz = Visdom(port=8850)
 import sys
@@ -17,6 +19,7 @@ import numpy as np
 import time
 import torch as th
 import torch.distributed as dist
+import torchvision.transforms as T
 from guided_diffusion import dist_util, logger
 from guided_diffusion.CrowdDataset_shangheiTech import CrowdDataset_shangheiTech
 from guided_diffusion.script_util import (
@@ -74,7 +77,7 @@ def main():
         args.data_dir, image_size=args.image_size, test_flag=True
     )
     dataloader = th.utils.data.DataLoader(
-        dataset, batch_size=args.batch_size, shuffle=True
+        dataset, batch_size=args.batch_size, shuffle=False
     )
     data = iter(dataloader)
 
@@ -85,6 +88,12 @@ def main():
         c = th.randn_like(b[:, :1, ...])
         img = th.cat((b, c), dim=1)  # add a noise channel$
         slice_ID = path[0].split("/")[-1][:-4]
+
+        # 
+        transforms = T.ToPILImage()
+        assert b.shape[0] == 1, "set batch size to 1 please"
+        original_img = transforms(b[0])
+        original_img.save("./results/" + str(slice_ID) + "_original.png")
 
         # We have 4 channels (3 + 1) in total
         viz.image(visualize(img[0, 0, ...]), opts=dict(caption="img input0"))
@@ -124,11 +133,24 @@ def main():
 
             s = th.tensor(sample)
             viz.image(visualize(sample[0, 0, ...]), opts=dict(caption="sampled output"))
-            # TODO: Save the output image with format .png instead of a tensor
+            # Save the output image with format .png instead of a tensor
+            toDensityMap(s, filename="./results/" + str(slice_ID) + "_output" + str(i))
             th.save(
                 s, "./results/" + str(slice_ID) + "_output" + str(i)
             )  # save the generated mask
 
+def toDensityMap(densityMap, filename):
+    
+    # 
+    densityMap = densityMap.cpu().numpy()
+    densityMap = densityMap[0][0]
+
+    # 
+    print(np.min(densityMap), np.max(densityMap))
+
+    #
+    plt.imshow(densityMap, cmap=cm.jet)
+    plt.savefig(f'{filename}.png')
 
 def create_argparser():
     defaults = dict(

@@ -106,15 +106,39 @@ class CrowdDataset_shangheiTech(data.Dataset):
 if __name__ == "__main__":
 
     #
-    root = "../datasets/ShanghaiTech/part_A/train_data"
-    dataset = CrowdDataset_shangheiTech(root=root)
+    root = "../data/ShanghaiTech/part_A/train_data"
+    dataset = CrowdDataset_shangheiTech(root=root, image_size=256)
     print("len", len(dataset))
 
     #
     index = 0
-    print("shape", dataset[index][0].shape)
-    print("shape", dataset[index][1].shape)
+    image, densityMap = dataset[index][0], dataset[index][1]
+    print("shape", image.shape)
+    print("shape", densityMap.shape)
+    """
+    len 300
+    shape torch.Size([3, 256, 256])
+    shape torch.Size([1, 256, 256])
+    """
 
-    # len 300
-    # shape torch.Size([3, 768, 1024])
-    # shape torch.Size([1, 768, 1024])
+    # 
+    import matplotlib.pyplot as plt 
+    import matplotlib.cm as cm
+
+    # image
+    transforms = T.ToPILImage()
+    image = transforms(image)
+    image.save('image.png')
+
+    # densityMap
+    densityMap = densityMap.cpu().numpy()
+    densityMap = densityMap[0]
+    print(np.min(densityMap), np.max(densityMap))
+    """ 0.0 0.09322145 """
+
+    plt.imshow(densityMap, cmap=cm.jet)
+    plt.savefig('densityMap.png')
+    
+
+
+
