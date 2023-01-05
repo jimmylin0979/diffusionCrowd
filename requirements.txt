@@ -19,6 +19,8 @@ art>=5.1
 nibabel>=3.2.1
 byol_pytorch>=0.5.6
 visdom>=0.1.8.9
+blobfile
+h5py
 
 # Logging -------------------------------------
 

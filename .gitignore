@@ -11,6 +11,10 @@ results
 
 ### Datasets ###
 data/ShanghaiTech
+*.zip
+*.7z
+*.tar.gz
+*.tar
 
 ### PyCharm ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
