@@ -71,7 +71,8 @@ The generated segmentation masks will be stored in the *results* folder. A visua
 
 ## **Roadmap**
 
-- [ ] Multi-GPU Training (Faster training speed/ Allow larger model)
+- [x] Multi-GPU Training (Faster training speed/ Allow larger model)
+- [ ] Use DDP as Multi-GPU Training Method
 - [x] Evaluation checking
 - [ ] Other dataset, like JHU-Crowd++
 
