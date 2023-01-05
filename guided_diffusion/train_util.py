@@ -1,6 +1,7 @@
 import copy
 import functools
 import os
+import re
 
 import blobfile as bf
 import torch as th
@@ -272,15 +273,31 @@ class TrainLoop:
         logger.logkv("step", self.step + self.resume_step)
         logger.logkv("samples", (self.step + self.resume_step + 1) * self.global_batch)
 
+    def delete_previous_checkpoints(self, prefix):
+        #
+        re_pattern = prefix + ".*pt"
+        logger.log(f"Delete previous checkpoint with pattern {re_pattern}")
+        pattern = re.compile(re_pattern)
+        for filename in os.listdir(f"{get_blob_logdir()}"):
+            if pattern.match(filename):
+                try:
+                    os.remove(os.path.join(get_blob_logdir(), filename))
+                    logger.log(f"Delete previous checkpoint {filename}")
+                except:
+                    pass
+
     def save(self):
         def save_checkpoint(rate, params):
             state_dict = self.mp_trainer.master_params_to_state_dict(params)
             if dist.get_rank() == 0:
                 logger.log(f"saving model {rate}...")
+                prefix = "savedmodel" if not rate else "emasavedmodel"
                 if not rate:
                     filename = f"savedmodel{(self.step+self.resume_step):06d}.pt"
                 else:
                     filename = f"emasavedmodel_{rate}_{(self.step+self.resume_step):06d}.pt"
+                
+                self.delete_previous_checkpoints(prefix=prefix)
                 with bf.BlobFile(bf.join(get_blob_logdir(), filename), "wb") as f:
                     th.save(state_dict, f)
 
@@ -289,10 +306,12 @@ class TrainLoop:
             save_checkpoint(rate, params)
 
         if dist.get_rank() == 0:
+            self.delete_previous_checkpoints(prefix="optsavedmodel")
             with bf.BlobFile(
                 bf.join(get_blob_logdir(), f"optsavedmodel{(self.step+self.resume_step):06d}.pt"),
                 "wb",
             ) as f:
+                logger.log(f"saving model opt...")
                 th.save(self.opt.state_dict(), f)
 
         dist.barrier()
