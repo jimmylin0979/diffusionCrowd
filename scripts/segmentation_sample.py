@@ -10,7 +10,7 @@ from visdom import Visdom
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-viz = Visdom(port=8850)
+viz = Visdom(port=8097)
 import sys
 import random
 

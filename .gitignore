@@ -7,7 +7,7 @@
 *.pptx
 
 ### Checkpoints/ Results ###
-results
+results*
 log.txt
 
 ### Datasets ###

@@ -50,10 +50,22 @@ pip install -r requirements.txt
 
 We set the flags as follows: (GPU: 2080 Ti 11GB)
 
+Open another terminal and type the command to start a visdom server session  
+The visdom server will display the port it is using, please make sure that the port in command `viz = Visdom(port=XXXX)` is the same with the port that server is using (use port 8097 as default)
+
+```bash
+python -m visdom.server
+```
+
+Then open another terminal to start training
+
 ```bash
 MODEL_FLAGS="--image_size 256 --num_channels 128 --class_cond False --num_res_blocks 2 --num_heads 1 --learn_sigma True --use_scale_shift_norm False --attention_resolutions 16"
 DIFFUSION_FLAGS="--diffusion_steps 1000 --noise_schedule linear --rescale_learned_sigmas False --rescale_timesteps False"
-TRAIN_FLAGS="--lr 1e-4 --batch_size 3"
+
+# batch_size can set up to 5, if use 3 2080 Ti with multi-gpu method DP 
+# batch_size can set up to 3, if use 1 2080 Ti only 
+TRAIN_FLAGS="--lr 1e-4 --batch_size 5"
 ```
 To train the segmentation model, run
 
@@ -63,7 +75,6 @@ python3 scripts/segmentation_train.py --data_dir ./data/ShanghaiTech/part_A/trai
 The model will be saved in the *results* folder.
 For sampling an ensemble of 5 segmentation masks with the DDPM approach, run:
 
-**Evaluation part is still working !**
 ```bash
 python scripts/segmentation_sample.py  --data_dir ./data/ShanghaiTech/part_A/test_data  --model_path ./results/savedmodel.pt --num_ensemble=5 $MODEL_FLAGS $DIFFUSION_FLAGS
 ```

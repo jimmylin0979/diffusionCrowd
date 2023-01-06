@@ -11,7 +11,7 @@ import torch
 import math
 from visdom import Visdom
 
-viz = Visdom(port=8850)
+viz = Visdom(port=8097)
 import numpy as np
 import torch as th
 from .train_util import visualize
