@@ -6,7 +6,9 @@ The implementation of Denoising Diffusion Probabilistic Models presented in the 
 
 ## **Project Abstract**
 
-TODO
+Compared to GANs, Diffusion models are able to generate better images while also having a significantly lower training difficulty. As a result, they are increasingly replacing GANs and achieving even better performance, further demonstrating the strength of Diffusion as a generative model.   
+In addition to the above-mentioned generation tasks, Diffusion models are also being applied to recognition tasks such as segmentation and detection, and achieving very good performance.  
+Given that Diffusion models have an inductive bias towards handling Gaussian distributions, it is expected that they will perform better on recognition tasks related to Gaussian processing, such as the density-based crowd counting task, which previous work usually use a GAN to predict the density map of multiple sums of Gaussian distributions. Based on this, we want to explore the effectiveness of using a Diffusion model as the main architecture.
 
 
 ## **Data**
@@ -73,13 +75,11 @@ To train the segmentation model, run
 python3 scripts/segmentation_train.py --data_dir ./data/ShanghaiTech/part_A/train_data $TRAIN_FLAGS $MODEL_FLAGS $DIFFUSION_FLAGS
 ```
 The model will be saved in the *results* folder.
-For sampling an ensemble of 5 segmentation masks with the DDPM approach, run:  
-(Open http://localhost:8097/ for a better evaluation visualization)
+For sampling an ensemble of 5 segmentation masks with the DDPM approach, run:
 
 ```bash
 python scripts/segmentation_sample.py  --data_dir ./data/ShanghaiTech/part_A/test_data  --model_path ./results/savedmodel.pt --num_ensemble=5 $MODEL_FLAGS $DIFFUSION_FLAGS
 ```
-
 The generated segmentation masks will be stored in the *results* folder. A visualization of the sampling process is done using [Visdom](https://github.com/fossasia/visdom).
 
 ## **Roadmap**
