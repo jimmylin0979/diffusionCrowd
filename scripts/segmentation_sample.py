@@ -59,6 +59,7 @@ def main():
     model, diffusion = create_model_and_diffusion(
         **args_to_dict(args, model_and_diffusion_defaults().keys())
     )
+    model = th.nn.DataParallel(model)
 
     #
     logger.log("loading previous weights into model...")
